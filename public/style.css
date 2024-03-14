@@ -23,6 +23,10 @@ p{
     width: 100%;
     margin: auto;
 }
+.container2{
+    width: 90%;
+    margin: auto;
+}
 .navbar{
     display: flex;
     align-items: center;

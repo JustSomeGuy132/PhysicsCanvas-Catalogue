@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - PhysicsCanvas</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="navbar">
+        <div class="logo">
+            <a href="index.html"><img src="physImg/phizz.ico" width="125px"></a>
+        </div>
+        <nav>
+        <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Explore</a></li>
+            <li><a id="profileURL" href="profile.html">Profile</a></li>
+            <li><a id="accountURL" href="account.html">Account</a></li>
+        </ul>
+        </nav>
+        <img src="images/menu.png" onclick="menutoggle()" class="menu-icon">
+    </div>
+</div>
+
+<!--------------Account Manage details--------------->
+<div class="container2">
+    <h1>Account management page</h1>
+    <p id="userTXT">Your username should be here</p>
+</div>
+
+<script>
+    function GrabCurrentAccount(){
+        fetch('../checkuser',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.text())
+        .then(value =>{
+            const userTXT = document.getElementById('userTXT');
+            if(!value.includes('Error')){
+                userTXT.textContent = "Username: " + value;
+            }else{
+                userTXT.textContent = "NOT SIGNED IN! HOW'D YOU GET HERE?";
+            }
+        })
+        .catch(err => {console.error(err); alert(err)});
+    }
+    GrabCurrentAccount();
+</script>
+<!----------Footer---------------> 
+
+<div class="footer">
+    <div class="container">
+        <div class="row">
+             <div class="footer-col2">
+                <img src="physImg/phizz.ico" width="100px">
+                 <p>Amazing 3D physics simulations.</p>
+             </div>
+             <div class="footer-col3">
+                <h3>Useful Links</h3>
+                 <ul>
+                     <li>Coupons</li>
+                     <li>Blog Post</li>
+                     <li>Return Policy</li>
+                     <li>Join Affiliate</li>
+                 </ul>
+             </div>
+             <div class="footer-col4">
+                <h3>Follow Us</h3>
+                 <ul>
+                     <li>Facebook</li>
+                     <li>Twitter<li>
+                     <li>Instagram</li>
+                     <li>YouTube</li>
+                 </ul>
+             </div>
+        </div>
+        <hr>
+        <p class="copyright">Copyright 2024 - PhysicsCanvas</p>
+    </div>
+    
+</div>
+
+<script>
+    function AccountURLs(){
+        fetch('../checkuser',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.text())
+        .then(user => {
+            const accountURL = document.getElementById('accountURL');
+            const profileURL = document.getElementById('profileURL');
+            if(!user.includes('Error')){
+                accountURL.href = "account_manage.html";
+                accountURL.textContent = user;
+                profileURL.href = "profile.html";
+            }
+            //Error would be triggered by there being no logged in user
+            //as the cookies for user and username would not exist
+            else{
+                accountURL.href = "account.html";
+                accountURL.textContent = "Account";
+                profileURL.href = "account.html";
+            }
+        })
+        .catch(err => alert(err));
+    }
+    AccountURLs();
+</script>
+
+<!-------------js for toggle menu-------------->
+
+<script>
+    var MenuItems = document.getElementById("MenuItems");
+    
+    MenuItems.style.maxHeight = "0px";
+    
+    function menutoggle()
+    {
+        if(MenuItems.style.maxHeight == "0px")
+            {
+                MenuItems.style.maxHeight = "200px";
+            }else
+            {
+                MenuItems.style.maxHeight = "0px"
+            } 
+    }
+     
+</script>
+<!------------------- form toggle ----------->
+    <script>
+        var LoginForm = document.getElementById("LoginForm");
+        var RegForm = document.getElementById("RegForm");
+        var Indicator = document.getElementById("indicator");
+        
+        function register(){
+                RegForm.style.transform = "translateX(0px)";
+                LoginForm.style.transform = "translateX(0px)";
+                Indicator.style.transform = "translateX(100px)"
+            };
+        function login(){
+                RegForm.style.transform = "translateX(300px)";
+                LoginForm.style.transform = "translateX(300px)";
+                Indicator.style.transform = "translateX(0px)"
+            };
+            
+    </script>
+    
+    
+    
+</body>
+</html>
+

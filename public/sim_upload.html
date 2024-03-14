@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish - PhysicsCanvas</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="navbar">
+        <div class="logo">
+            <a href="index.html"><img src="physImg/phizz.ico" width="125px"></a>
+        </div>
+        <nav>
+        <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Explore</a></li>
+            <li><a id="profileURL" href="profile.html">Profile</a></li>
+            <li><a id="accountURL" href="account.html">Account</a></li>
+        </ul>
+        </nav>
+        <img src="images/menu.png" onclick="menutoggle()" class="menu-icon">
+    </div>
+</div>       
+
+<div class="container2">
+    <h1>Simulation publish page</h1>
+    <form id="simuploadform" enctype="multipart/form-data">
+        <h3>Upload the simulation file(*.psim):</h3>
+        <input type="file" id="simfile" name="simfile" accept=".psim" required>
+
+        <h3>Give it a title:</h3>
+        <input type="text" id="titleInput" name="titleInput" required>
+
+        <h3>Add a description:</h3>
+        <textarea id="descriptionInput" name="descriptionInput" rows="5" cols="100" required></textarea>
+
+        <h3>Upload screenshots:</h3>
+        <input type="file" id="screenshots" name="screenshots" accept="image/*" multiple required>
+
+        <button type="submit" class="btn">Submit</button>
+    </form>
+
+    <script>
+        const form = document.querySelector('form');
+        
+        form.addEventListener('submit',
+        (event)=>{
+            event.preventDefault();
+            const simfile = document.getElementById('simfile');
+            const title = document.getElementById('titleInput');
+            const desc = document.getElementById('descriptionInput');
+            const screenshots = document.getElementById('screenshots');
+
+            const formData = new FormData();
+            formData.append('title', title.value);
+            formData.append('desc', desc.value);
+            formData.append('simfile', simfile.files[0]);
+            for(let i = 0; i < screenshots.files.length; i++){
+                formData.append('screenshots', screenshots.files[i]);
+            }
+            fetch('../uploadSim',
+            {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => console.log(data));
+        })
+    </script>
+
+</div>
+
+<!----------Footer---------------> 
+
+<div class="footer">
+    <div class="container">
+        <div class="row">
+             <div class="footer-col2">
+                <img src="physImg/phizz.ico" width="100px">
+                 <p>Amazing 3D physics simulations.</p>
+             </div>
+             <div class="footer-col3">
+                <h3>Useful Links</h3>
+                 <ul>
+                     <li>Coupons</li>
+                     <li>Blog Post</li>
+                     <li>Return Policy</li>
+                     <li>Join Affiliate</li>
+                 </ul>
+             </div>
+             <div class="footer-col4">
+                <h3>Follow Us</h3>
+                 <ul>
+                     <li>Facebook</li>
+                     <li>Twitter<li>
+                     <li>Instagram</li>
+                     <li>YouTube</li>
+                 </ul>
+             </div>
+        </div>
+        <hr>
+        <p class="copyright">Copyright 2024 - PhysicsCanvas</p>
+    </div>
+    
+</div>
+
+<script>
+    function AccountURLs(){
+        fetch('../checkuser',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.text())
+        .then(user => {
+            const accountURL = document.getElementById('accountURL');
+            const profileURL = document.getElementById('profileURL');
+            if(!user.includes('Error')){
+                accountURL.href = "account_manage.html";
+                accountURL.textContent = user;
+                profileURL.href = "profile.html";
+            }
+            //Error would be triggered by there being no logged in user
+            //as the cookies for user and username would not exist
+            else{
+                accountURL.href = "account.html";
+                accountURL.textContent = "Account";
+                profileURL.href = "account.html";
+            }
+        })
+        .catch(err => alert(err));
+    }
+    AccountURLs();
+</script>
+
+<!-------------js for toggle menu-------------->
+
+<script>
+    
+    var MenuItems = document.getElementById("MenuItems");
+    
+    MenuItems.style.maxHeight = "0px";
+    
+    function menutoggle()
+    {
+        if(MenuItems.style.maxHeight == "0px")
+        {
+            MenuItems.style.maxHeight = "200px";
+        }
+        else
+        {
+            MenuItems.style.maxHeight = "0px"
+        }
+    }
+    
+    
+</script>
+
+
+
+</body>
+</html>
+

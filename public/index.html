@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhysicsCanvas - Home</title>
+    <title>Home - PhysicsCanvas</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
    <div class="header">
-       <div class="container">
+        <div class="container">
            <div class="navbar">
               <div class="logo">
                   <a href="index.html"><img src="physImg/phizz.ico" width="125px"></a>
@@ -19,8 +19,8 @@
                <ul id="MenuItems">
                    <li><a href="index.html">Home</a></li>
                    <li><a href="products.html">Explore</a></li>
-                   <li><a href="profile.html">Profile</a></li>
-                   <li><a href="account.html">Account</a></li>
+                   <li><a id="profileURL" href="profile.html">Profile</a></li>
+                   <li><a id="accountURL" href="account.html">Account</a></li>
                </ul>
               </nav>
               <img src="images/menu.png" onclick="menutoggle()" class="menu-icon">
@@ -28,7 +28,8 @@
            <div class="row">
                 <div class="col-2">
                     <h1>Welcome to<br>PhysicsCanvas!</h1>
-                    <p>Experience amazing educational physics simulations created by other users...<br>...or create and publish your own!</p>
+                    <p>Experience amazing educational physics simulations created by other users...<br>
+                        ...or create and publish your own!</p>
                     <a href="products.html" class="btn">Explore simulations</a>
                     <a href="#" class="btn">Download PhysicsCanvas</a>
                 </div>
@@ -122,7 +123,34 @@
     
 </div>
 
-
+<script>
+    function AccountURLs(){
+        fetch('../checkuser',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.text())
+        .then(user => {
+            const accountURL = document.getElementById('accountURL');
+            const profileURL = document.getElementById('profileURL');
+            if(!user.includes('Error')){
+                accountURL.href = "account_manage.html";
+                accountURL.textContent = user;
+                profileURL.href = "profile.html";
+            }
+            //Error would be triggered by there being no logged in user
+            //as the cookies for user and username would not exist
+            else{
+                accountURL.href = "account.html";
+                accountURL.textContent = "Account";
+                profileURL.href = "account.html";
+            }
+        })
+        .catch(err => alert(err));
+    }
+    AccountURLs();
+</script>
 
 <!-------------js for toggle menu-------------->
 
