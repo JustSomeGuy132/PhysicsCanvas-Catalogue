@@ -4,7 +4,10 @@ const cors = require('cors');
 const cookie_parser = require('cookie-parser');
 const path = require('path');
 const multer = require('multer');
-const storage = multer.diskStorage({
+const { addAbortListener } = require('stream');
+const { cryptoHash } = require('node:crypto');
+
+const store = multer.diskStorage({
     destination: (req, file, callback)=>{
         callback(null, __dirname + "/Sims");
     },
@@ -12,7 +15,12 @@ const storage = multer.diskStorage({
         callback(null, file.originalname);
     }
 });
-const uploadSim = multer({ storage: storage });
+const uploadSim = multer({ storage: store });
+const uploadImg = multer({ storage: multer.diskStorage({
+    destination: (req, file, callback) => callback(null, __dirname + "/Images"),
+    filename: (req, file, callback) => callback(null, file.originalname)
+})}
+);
 
 const app = express();
 
@@ -28,6 +36,10 @@ publicPath = path.join(__dirname, 'public');
 app.use(express.json());
 app.use(cors());
 app.use(cookie_parser());
+
+app.use(express.static(path.join(__dirname, "Sims")));
+
+app.use(express.static(publicPath));
 
 app.post('/checkuser', (req, res)=>{
     try{
@@ -65,7 +77,8 @@ app.post('/signup', (req, res)=>{
             });
             res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
             res.cookie('username', JSON.stringify(username), {maxAge: 86400000, httpOnly: true})
-            return res.status(200).send('Account created successfully!');
+            res.status(200).send('Account created successfully!');
+            res.redirect("public/index.html");
         }
     );
 });
@@ -87,20 +100,74 @@ app.post('/login', (req,res)=>{
         console.log("Logged in to (" + email + ", " + password + ")");
         res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
         res.cookie('username', JSON.stringify(row.Username), {maxAge: 86400000, httpOnly: true});
-        return res.status(200).send("Login successful!");
+        //res.status(200).send("Login successful!");
+        res.redirect("public/index.html");
     })
 });
 
 app.post('/uploadSim', uploadSim.fields([
     {name: 'simfile', maxCount: 1},
-    {name: 'screenshots', maxCount: 5}
-]), 
-(req, res) => {
-    console.log(req.body);
-    res.json({ status: "Files received successfully." });
+    {name: 'screenshots', maxCount: 10}
+]), (req, res) => {
+    //Record input form data
+    const title = req.body.title;
+    const description = req.body.desc;
+    const simfilename = req.files['simfile'][0].filename;
+    const screenshotnames = req.files['screenshots'].map(file => file.filename);
+    
+    //Get the email of current user and create new SimId for new simulation
+    const email = JSON.parse(req.cookies.user);
+    const id = Math.floor(Math.random() * 9999);
+    const simId = "S" + String(id).padStart(5, '0');
+    db.run(`INSERT INTO Simulation VALUES('${simId}', '${email}', '${title}', '${description}', '${simfilename}');`,
+        (err)=>{
+            if(err) res.status(400).send(err);
+            
+            for(let i = 0; i < screenshotnames.length; i++){
+                db.run(`INSERT INTO Images VALUES ('${simId}', '${screenshotnames[i]}');`,
+                    (err)=>{
+                        if(err) res.status(400).send(err);
+                    }
+                );
+            }
+            res.redirect('public/sim_details.html/' + simId);
+        }
+    );
 });
 
+app.get('/public/sim_details.html/:simId', (req, res)=>{
+    var data = [];
+    db.get(`SELECT * FROM Simulation WHERE SimId = '${req.params['simId']}';`,
+    (err, row)=>{
+        if(err)
+            return res.status(400).send("Could not retrieve simulation");
+        
+        data.push(row.Author);
+        data.push(row.Title);
+        data.push(row.Description);
 
-app.use(express.static(publicPath));
+        db.all(`SELECT ImageURL FROM Images WHERE SimId = '${req.params['simId']}';`,
+        (err, rows)=>{
+            if(err)
+                return res.status(400).send("Could not retrieve images,\n" + err);
+            
+            var images = [];
+            rows.forEach(row => images.push(row.ImageURL));
+            data.push(images);
+            res.status(200).send(JSON.stringify(data));
+        });
+    });
+});
+
+app.get('/simDownload', (req, res)=>{
+    db.get(`SELECT DataURL FROM Simulation WHERE SimId = '${req.body.simId}';`,
+    (err, row)=>{
+        if(err)
+            res.status(400).send("Simulation data could not be received");
+        else{
+            res.sendFile(path.join(__dirname, "Sims", row.DataURL));
+        }
+    });
+});
 
 app.listen(8080, ()=>{console.log("Listening to port 8080")});

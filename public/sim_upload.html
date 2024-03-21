@@ -54,6 +54,10 @@
             const title = document.getElementById('titleInput');
             const desc = document.getElementById('descriptionInput');
             const screenshots = document.getElementById('screenshots');
+            
+            if(screenshots.files.length > 10){
+                return alert("Too many screenshot files");
+            }
 
             const formData = new FormData();
             formData.append('title', title.value);
@@ -67,8 +71,7 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => console.log(data));
+            .then(response => window.location.assign("sim_details.html"));
         })
     </script>
 

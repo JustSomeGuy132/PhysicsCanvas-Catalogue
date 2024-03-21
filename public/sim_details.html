@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhysicsCanvas - Catalogue</title>
+    <title>Simulation details - PhysicsCanvas</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -30,9 +30,45 @@
        
        
 <!--------------single-product--------------->
-<h1>Simulation details page</h1>
-     
-   
+<div class="container2">
+    <h1 id="simtitle">Simulation details page</h1>
+    <div class="small-container single-product">
+        <div class="row">
+            <div class="col-2">
+                <img src="" width="100%" id="Img0">
+                <ul class="small-img-row">
+                   <div class="small-img-col">
+                       <img src="images/gallery-1.jpg" class="small-img" width="100%">
+                   </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    fetch('/:simId',
+    {
+        method: 'GET',
+    })
+    //after retrieving the details, edit the html elements to display this data
+    .then(data =>{
+        const {author, title, description, images} = data;
+        document.getElementById('simtitle').textContent = title;
+        const imgRow = document.getElementsByClassName('small-img-row').item(0);
+        images.forEach(img => {
+            const newEl = document.createElement('li')
+            imgRow.appendChild(newEl);
+            newEl.className = 'small-img-col';
+            const newImg = document.createElement('img');
+            newEl.appendChild(newImg);
+            newImg.className = "small-img";
+            newImg.width = "100%";
+            newImg.src = "../Images/" + img;
+        });
+    });
+</script>
+
 <!----------Footer---------------> 
 
 <div class="footer">
@@ -118,30 +154,15 @@
     
 //-------------Produc Gallery------------
     
-    var ProductImg = document.getElementById("ProductImg");
+    const BigImg = document.getElementById("img0");
     
-    var SmallImg = document.getElementsByClassName("small-img");
-       
- 
-        SmallImg[0].onclick = function()
-        {
-            ProductImg.src = SmallImg[0].src;
-        }
-        SmallImg[1].onclick = function()
-        {
-            ProductImg.src = SmallImg[1].src;
-        
-        }
-        SmallImg[2].onclick = function()
-        {
-            ProductImg.src = SmallImg[2].src;
-        
-        }
-        SmallImg[3].onclick = function()
-        {
-            ProductImg.src = SmallImg[3].src;
-        
-        }
+    const SmallImg = document.getElementsByClassName("small-img");
+    
+    BigImg.src = SmallImg[0].src;
+
+    for(let i = 0; i< SmallImg.length; i++){
+        SmallImg[i].onclick = () => BigImg.src = SmallImg[i].src;
+    }
 
   //-------------End Produc Gallery------------  
     

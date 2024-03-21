@@ -6,10 +6,10 @@ function handleSubmit(event){
 function VerifyLogin(){
     const email = document.getElementById("email-log").value;
     const password = document.getElementById("password-log").value;
-    /*if(" " in email || " " in password){
+    if(email.includes(" ") || password.includes(" ")){
         alert("Invalid inputs");
         return;
-    }*/
+    }
     fetch('../login',
     {
         method: 'POST',
@@ -23,11 +23,11 @@ function VerifyLogin(){
 
 function ValidUserN(usern){
     return (usern.length > 0 && usern.length <= 20
-            && !(" " in usern));
+            && !usern.includes(" "));
 }
 function ValidPassword(pass){
     return (pass.length > 7 && pass.length <= 20
-            && !(" " in pass));
+            && !pass.includes(" "));
 }
 function ValidRePass(){
     return (document.getElementById("password-sign").value === document.getElementById("re-password").value);
@@ -38,7 +38,7 @@ function ValidateSignUp(){
     const username = document.getElementById("username").value;
     const password = document.getElementById("password-sign").value;
     const re_pass = document.getElementById("re-password").value;
-    if(!email /*|| " " in email*/ || !ValidUserN(username)){
+    if(!email || email.includes(" ") || !ValidUserN(username)){
         alert("Email or username are invalid!");
         return;
     }
