@@ -6,6 +6,7 @@ const path = require('path');
 const multer = require('multer');
 const { addAbortListener } = require('stream');
 const { cryptoHash } = require('node:crypto');
+const fs = require('fs');
 
 const store = multer.diskStorage({
     destination: (req, file, callback)=>{
@@ -37,7 +38,7 @@ app.use(express.json());
 app.use(cors());
 app.use(cookie_parser());
 
-app.use(express.static(path.join(__dirname, "Sims")));
+app.use('/Sims', express.static(path.join(__dirname, "Sims")));
 
 app.use(express.static(publicPath));
 
@@ -135,26 +136,37 @@ app.post('/uploadSim', uploadSim.fields([
     );
 });
 
-app.get('/public/sim_details.html/:simId', (req, res)=>{
-    var data = [];
-    db.get(`SELECT * FROM Simulation WHERE SimId = '${req.params['simId']}';`,
+app.get('/Simulations/:simId', (req, res)=>{
+    db.get(`SELECT Username, Title, Description FROM Simulation, Users
+            WHERE Email = Author 
+            AND SimId = '${req.params.simId}';`,
     (err, row)=>{
         if(err)
-            return res.status(400).send("Could not retrieve simulation");
-        
-        data.push(row.Author);
-        data.push(row.Title);
-        data.push(row.Description);
+            return res.status(400).send("Could not retrieve simulation:\n" + err);
+        if(!row)
+            return res.status(404).send("Simulation not found");
 
-        db.all(`SELECT ImageURL FROM Images WHERE SimId = '${req.params['simId']}';`,
+        const data = {
+            author: row.Username,
+            title: row.Title,
+            desc: row.Description,
+            images: []
+        };
+        db.all(`SELECT ImageURL FROM Images WHERE SimId = '${req.params.simId}';`,
         (err, rows)=>{
             if(err)
                 return res.status(400).send("Could not retrieve images,\n" + err);
             
-            var images = [];
-            rows.forEach(row => images.push(row.ImageURL));
-            data.push(images);
-            res.status(200).send(JSON.stringify(data));
+            rows.forEach(row => data.images.push(row.ImageURL));
+            //Read the HTML page content and add a script to load the data obtained here
+            fs.readFile(__dirname + '/public/sim_details.html', 'utf-8', (err, content)=>{
+                if(err)
+                    return res.status(400).send(err);
+
+                const page = content + `<script>GetSimDetails(${JSON.stringify(data)})</script>`;
+                res.setHeader('Content-Type', 'text/html');
+                res.send(page);
+            });
         });
     });
 });
