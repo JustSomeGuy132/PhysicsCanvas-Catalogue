@@ -171,15 +171,61 @@ app.get('/Simulations/:simId', (req, res)=>{
     });
 });
 
-app.get('/simDownload', (req, res)=>{
-    db.get(`SELECT DataURL FROM Simulation WHERE SimId = '${req.body.simId}';`,
+app.post('/Simulations/simDownload', (req, res)=>{
+    const {simId} = req.body;
+    db.get(`SELECT * FROM Simulation WHERE SimId = '${simId}';`,
     (err, row)=>{
         if(err)
-            res.status(400).send("Simulation data could not be received");
+            return res.status(400).send("Simulation data could not be received");
+
+        if(!row) return res.status(400).send("Simulation "+ simId +" does not exist");
         else{
-            res.sendFile(path.join(__dirname, "Sims", row.DataURL));
+            res.download(path.join(__dirname, "Sims", row.DataURL), row.DataURL,
+            (err)=>{
+                if(err) res.status(500).send("Error:\n" + err);
+            });
         }
     });
 });
+
+app.post('/Simulations/simSave', (req, res)=>{
+    const currentUser = JSON.parse(req.cookies.user);
+    const {simId} = req.body;
+    db.get(`SELECT * FROM SavedSims WHERE Email = '${currentUser}' AND SimID = '${simId}';`,
+    (err, row)=>{
+        if(err) return res.status(400).send(err);
+        if(row) return res.status(200).send("Already saved this one!");
+
+        db.run(`INSERT INTO SavedSims VALUES ('${currentUser}', '${simId}');`,
+        (err)=>{
+            if(err) return res.status(400).send(err);
+    
+            return res.status(200).send("Simulation "+ simId +" saved successfully!");
+        });
+    });
+});
+
+app.get('/explore', (req, res)=>{
+    db.all('SELECT * FROM Simulation', (err, rows)=>{
+        if(err) return res.status(500).send(err);
+
+        rows.forEach(row =>{
+            const data = {
+                id: row.SimId,
+                author: row.Author,
+                title: row.Title,
+                description: row.Description,
+                thumbnail: "../Sims/"
+            }
+            db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`,
+            (err, image)=>{
+                if(err) res.status(500).send(err);
+
+                data.thumbnail += image.ImageURL;
+                res.status(200).send(JSON.stringify(data));
+            })
+        });
+    })
+})
 
 app.listen(8080, ()=>{console.log("Listening to port 8080")});

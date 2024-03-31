@@ -7,33 +7,8 @@
     <link rel="stylesheet" href="../style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script>
-        function GetSimDetails(simData){
-            const {author, title, desc, images} = simData;
-            document.getElementById('simtitle').textContent = title;
-            document.getElementById('authorTag').textContent = "By " + author;
-            document.getElementById('simdesc').textContent = desc;
-            const imgRow = document.getElementsByClassName('small-img-row').item(0);
-            images.forEach(img => {
-                const newEl = document.createElement('li')
-                imgRow.appendChild(newEl);
-                newEl.className = 'small-img-col';
-                const newImg = document.createElement('img');
-                newEl.appendChild(newImg);
-                newImg.src = "../Sims/" + img;
-                newImg.className = "small-img";
-                newImg.width = 100;
-            });
-            
-            const BigImg = document.getElementById("Img0");
-            const SmallImg = document.getElementsByClassName("small-img");
-            BigImg.src = SmallImg[0].src;
-        
-            for(let i = 0; i < SmallImg.length; i++){
-                SmallImg[i].onclick = () => BigImg.src = SmallImg[i].src;
-            }
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+    <script src="../sim_details_scripts.js"></script>
 </head>
 <body>
     <div class="container">
@@ -69,7 +44,8 @@
                 <p id="authorTag">Author goes here</p>
                 <h3>Description:</h3>
                 <p id="simdesc">Your description should be here.</p>
-                <button class="btn">Download</button><button class="btn">Save</button>
+                <button class="btn" onclick="DownloadSim()">Download</button>
+                <button class="btn" onclick="SaveSim()">Save</button>
             </div>
         </div>
     </div>
