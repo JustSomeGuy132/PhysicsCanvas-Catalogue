@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="sim_explore_scripts.js"></script>
 </head>
 <body>
     <div class="container">
@@ -34,25 +35,23 @@
            <option>THERE ARE NO SORTING OPTIONS YET</option>
        </select>
    </div>
-   <div class="searchbar" id="searchbar">
-    <input type="search" placeholder="Search simulations"><button><i class="fa fa-search"></i></button>
-   </div>
-        <div class="row">
-           <div class="col-4">
-           </div>
-            
-            <div id="simContainer">
-                <!--Fill in this part with simulations to view-->
-            </div>       
-           
-            <div class="page-btn">
-                <span>1</span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>&#8594;</span>
-            </div>
-        </div>
+
+    <form class="searchbar" id="searchbar">
+        <input id="search" type="search" placeholder="Search simulations">
+        <button type="submit"><i class="fa fa-search"></i></button>
+    </form>
+    
+    <div id="simContainer">
+        <!--Fill in this part with simulations to view-->
+    </div>       
+    
+    <div class="page-btn">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <span>4</span>
+        <span>&#8594;</span>
+    </div>
 
 <!--          
     <div class="row">

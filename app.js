@@ -17,11 +17,6 @@ const store = multer.diskStorage({
     }
 });
 const uploadSim = multer({ storage: store });
-const uploadImg = multer({ storage: multer.diskStorage({
-    destination: (req, file, callback) => callback(null, __dirname + "/Images"),
-    filename: (req, file, callback) => callback(null, file.originalname)
-})}
-);
 
 const app = express();
 
@@ -32,6 +27,7 @@ const db = new sqlite3.Database(path.join(__dirname, 'cat_db.db'), sqlite3.OPEN_
         }
     }
 );
+
 publicPath = path.join(__dirname, 'public');
 
 app.use(express.json());
@@ -122,7 +118,7 @@ app.post('/uploadSim', uploadSim.fields([
     const simId = "S" + String(id).padStart(5, '0');
     db.run(`INSERT INTO Simulation VALUES('${simId}', '${email}', '${title}', '${description}', '${simfilename}');`,
         (err)=>{
-            if(err) res.status(400).send(err);
+            if(err) return res.status(400).send(err);
             
             for(let i = 0; i < screenshotnames.length; i++){
                 db.run(`INSERT INTO Images VALUES ('${simId}', '${screenshotnames[i]}');`,
@@ -131,7 +127,14 @@ app.post('/uploadSim', uploadSim.fields([
                     }
                 );
             }
-            res.redirect('public/sim_details.html/' + simId);
+            //Update the virtual table with the new simulation info
+            const username = JSON.parse(req.cookies.username);
+            db.run(`INSERT INTO Sims_fts VALUES ('${simId}', '${username}', '${title}', '${description}');`,
+            (err)=>{
+                if(err) return res.status(500).send(err);
+
+                res.redirect('public/Simulations/' + simId);
+            });
         }
     );
 });
@@ -163,7 +166,7 @@ app.get('/Simulations/:simId', (req, res)=>{
                 if(err)
                     return res.status(400).send(err);
 
-                const page = content + `<script>GetSimDetails(${JSON.stringify(data)})</script>`;
+                const page = content + `<script id="caller">GetSimDetails(${JSON.stringify(data)})</script>`;
                 res.setHeader('Content-Type', 'text/html');
                 res.send(page);
             });
@@ -205,27 +208,81 @@ app.post('/Simulations/simSave', (req, res)=>{
     });
 });
 
-app.get('/explore', (req, res)=>{
-    db.all('SELECT * FROM Simulation', (err, rows)=>{
-        if(err) return res.status(500).send(err);
+app.get('/explore', async (req, res) => {
+    try {
+        const rows = await new Promise((resolve, reject) => {
+            db.all(`SELECT Username, SimId, Title, Description FROM Simulation, Users
+                    WHERE Email = Author;`, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
 
-        rows.forEach(row =>{
+        const simulations = [];
+        for (const row of rows) {
+            const data = {
+                id: row.SimId,
+                author: row.Username,
+                title: row.Title,
+                description: row.Description,
+                thumbnail: "../Sims/"
+            };
+
+            const image = await new Promise((resolve, reject) => {
+                db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`, (err, image) => {
+                    if (err) reject(err);
+                    else resolve(image);
+                });
+            });
+            data.thumbnail += image.ImageURL;
+            simulations.push(data);
+        }
+        res.status(200).json({simulations});
+    }
+    catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.get('/explore/:search', async (req, res) => {
+    try {
+        // The virtual table was created much earlier so we can rely on its data
+        // Retrieve data from the virtual table based on search query
+        const rows = await new Promise((resolve, reject) => {
+            db.all(`SELECT SimId, Author, Title, Description FROM Sims_fts
+                    WHERE Sims_fts MATCH '${req.params.search}';`, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        })
+        .catch(err => console.error(err));
+
+        const simulations = [];
+        for (const row of rows) {
             const data = {
                 id: row.SimId,
                 author: row.Author,
                 title: row.Title,
                 description: row.Description,
                 thumbnail: "../Sims/"
-            }
-            db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`,
-            (err, image)=>{
-                if(err) res.status(500).send(err);
+            };
 
-                data.thumbnail += image.ImageURL;
-                res.status(200).send(JSON.stringify(data));
-            })
-        });
-    })
-})
+            const image = await new Promise((resolve, reject) => {
+                db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`, (err, image) => {
+                    if (err) reject(err);
+                    else resolve(image);
+                });
+            });
+            data.thumbnail += image.ImageURL;
+            simulations.push(data);
+        }
+        res.status(200).json({simulations});
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+
 
 app.listen(8080, ()=>{console.log("Listening to port 8080")});

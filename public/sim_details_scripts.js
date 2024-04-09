@@ -1,5 +1,3 @@
-//const download = require("downloadjs");
-
 const simId = window.location.href.slice(-6);
 
 function GetSimDetails(simData){
@@ -26,6 +24,8 @@ function GetSimDetails(simData){
     for(let i = 0; i < SmallImg.length; i++){
         SmallImg[i].onclick = () => BigImg.src = SmallImg[i].src;
     }
+
+    document.getElementById('caller').remove();
 }
 
 function DownloadSim(){
