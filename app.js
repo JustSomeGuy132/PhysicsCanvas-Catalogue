@@ -73,9 +73,8 @@ app.post('/signup', (req, res)=>{
                 }
             });
             res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
-            res.cookie('username', JSON.stringify(username), {maxAge: 86400000, httpOnly: true})
-            res.status(200).send('Account created successfully!');
-            res.redirect("public/index.html");
+            res.cookie('username', JSON.stringify(username), {maxAge: 86400000, httpOnly: true});
+            res.redirect("/index.html");
         }
     );
 });
@@ -97,9 +96,14 @@ app.post('/login', (req,res)=>{
         console.log("Logged in to (" + email + ", " + password + ")");
         res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
         res.cookie('username', JSON.stringify(row.Username), {maxAge: 86400000, httpOnly: true});
-        //res.status(200).send("Login successful!");
-        res.redirect("public/index.html");
+        res.redirect("/index.html");
     })
+});
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('user');
+    res.clearCookie('username');
+    res.redirect('/index.html');
 });
 
 app.post('/uploadSim', uploadSim.fields([
@@ -250,7 +254,8 @@ app.get('/explore/:search', async (req, res) => {
         // Retrieve data from the virtual table based on search query
         const rows = await new Promise((resolve, reject) => {
             db.all(`SELECT SimId, Author, Title, Description FROM Sims_fts
-                    WHERE Sims_fts MATCH '${req.params.search}';`, (err, rows) => {
+                    WHERE Sims_fts MATCH '${req.params.search}'
+                    ORDER BY rank;`, (err, rows) => {
                 if (err) reject(err);
                 else resolve(rows);
             });
@@ -283,6 +288,77 @@ app.get('/explore/:search', async (req, res) => {
     }
 });
 
+app.get('/publishedSims', async (req, res) => {
+    try{
+        const currentUser = JSON.parse(req.cookies.user);
+        const rows = await new Promise((resolve, reject)=>{
+            db.all(`SELECT * FROM Simulation WHERE Author = '${currentUser}';`, (err, rows)=>{
+                if(err) reject(err);
+                else resolve(rows);
+            });
+        });
+        const simulations = [];
+        for (const row of rows) {
+            const data = {
+                id: row.SimId,
+                author: row.Author,
+                title: row.Title,
+                description: row.Description,
+                thumbnail: "../Sims/"
+            };
+    
+            const image = await new Promise((resolve, reject) => {
+                db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`, (err, image) => {
+                    if (err) reject(err);
+                    else resolve(image);
+                });
+            });
+            data.thumbnail += image.ImageURL;
+            simulations.push(data);
+        }
+        res.status(200).json({simulations});
 
+    } catch(err){ 
+        res.status(500).send(err);
+    }
+});
+
+app.get('/savedSims', async (req, res) => {
+    try{
+        const currentUser = JSON.parse(req.cookies.user);
+        const rows = await new Promise((resolve, reject)=>{
+            db.all(`SELECT SavedSims.SimID, Username, Title, Description FROM SavedSims, Simulation, Users
+                    WHERE SavedSims.Email = '${currentUser}'
+                    AND SavedSims.SimID = Simulation.SimId
+                    AND Author = Users.Email;`, (err, rows)=>{
+                if(err) reject(err);
+                else resolve(rows);
+            });
+        }).catch(err => console.error(err));
+        const simulations = [];
+        for (const row of rows) {
+            const data = {
+                id: row.SimID,
+                author: row.Username,
+                title: row.Title,
+                description: row.Description,
+                thumbnail: "../Sims/"
+            };
+    
+            const image = await new Promise((resolve, reject) => {
+                db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`, (err, image) => {
+                    if (err) reject(err);
+                    else resolve(image);
+                });
+            });
+            data.thumbnail += image.ImageURL;
+            simulations.push(data);
+        }
+        res.status(200).json({simulations});
+
+    } catch(err){ 
+        res.status(500).send(err);
+    }
+});
 
 app.listen(8080, ()=>{console.log("Listening to port 8080")});

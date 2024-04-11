@@ -16,8 +16,9 @@ function VerifyLogin(){
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({email, password})
     })
-    .then(response => response.text())
-    .then(message => alert(message))
+    .then(response => {
+        if(response.redirected) window.location.href = response.url;
+    })
     .catch(error => alert("Error after fetch:\n" + error));
 }
 
@@ -57,7 +58,8 @@ function ValidateSignUp(){
         headers: {'Content-Type' : 'application/json'},
         body: JSON.stringify({email, username, password})
     })
-    .then(response => response.text())
-    .then(message => alert(message))
+    .then(response => {
+        if(response.redirected) window.location.href = response.url;
+    })
     .catch(error => alert("Error after fetch:\n" + error));
 }

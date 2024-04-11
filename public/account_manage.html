@@ -30,28 +30,15 @@
 <div class="container2">
     <h1>Account management page</h1>
     <p id="userTXT">Your username should be here</p>
+    <button class="btn" id="logout" onclick="LogOut()">Log out</button>
+    <script>document.getElementById('logout').style.background = 'red';
+    function LogOut(){ 
+        fetch('../logout', { method: 'POST' })
+        .then(response => {
+            if(response.redirected) window.location.href = response.url;
+        }); }</script>
 </div>
 
-<script>
-    function GrabCurrentAccount(){
-        fetch('../checkuser',
-        {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        })
-        .then(response => response.text())
-        .then(value =>{
-            const userTXT = document.getElementById('userTXT');
-            if(!value.includes('Error')){
-                userTXT.textContent = "Username: " + value;
-            }else{
-                userTXT.textContent = "NOT SIGNED IN! HOW'D YOU GET HERE?";
-            }
-        })
-        .catch(err => {console.error(err); alert(err)});
-    }
-    GrabCurrentAccount();
-</script>
 <!----------Footer---------------> 
 
 <div class="footer">
@@ -97,10 +84,12 @@
         .then(user => {
             const accountURL = document.getElementById('accountURL');
             const profileURL = document.getElementById('profileURL');
+            const userTXT = document.getElementById('userTXT');
             if(!user.includes('Error')){
                 accountURL.href = "account_manage.html";
                 accountURL.textContent = user;
                 profileURL.href = "profile.html";
+                userTXT.textContent = "Username: " + user;
             }
             //Error would be triggered by there being no logged in user
             //as the cookies for user and username would not exist
@@ -108,6 +97,7 @@
                 accountURL.href = "account.html";
                 accountURL.textContent = "Account";
                 profileURL.href = "account.html";
+                userTXT.textContent = "NOT SIGNED IN! HOW'D YOU GET HERE?";
             }
         })
         .catch(err => alert(err));

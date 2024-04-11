@@ -1,26 +1,3 @@
-function Search(){
-    const searchQuery = document.getElementById('search').value;
-    let sQ = searchQuery;
-    sQ = sQ.replace(" ", "+");
-    FetchSims(sQ);
-}
-
-function FetchSims(search){
-    //Fetch results and populate the container
-    if(!search){
-        fetch('../explore', {method: 'GET'})
-        .then(response => response.json())
-        .then(data => OrganiseSims(data))
-        .catch(err => alert(err));
-    }
-    else{
-        fetch('../explore/' + search, {method: 'GET'})
-        .then(response => response.json())
-        .then(data => OrganiseSims(data))
-        .catch(err => alert(err));
-    }
-}
-
 function OrganiseSims(sims){
     const {simulations} = sims;
     const container = document.getElementById('simContainer');
@@ -28,12 +5,11 @@ function OrganiseSims(sims){
     let count = 0;
     let row;
     simulations.forEach(content => {
-        if(count % 3 === 0){
+        if(count % 4 === 0){
             row = document.createElement('div');
             row.className = "row";
             container.appendChild(row);
-        }
-        count += 1;
+        } count += 1;
         const {id, author, title, description, thumbnail} = content;
         //Clickable image to link to sim details page
         const imgLink = document.createElement('a');
@@ -65,13 +41,9 @@ function OrganiseSims(sims){
     });
 }
 
-FetchSims();
-
 document.addEventListener('DOMContentLoaded', (e)=>{
-    const s_bar = document.querySelector('form');
-    s_bar.addEventListener('submit',
-    (event)=>{
-        event.preventDefault();
-        Search();
-    });
+    fetch('../savedSims', { method: 'GET' })
+    .then(response => response.json())
+    .then(data => OrganiseSims(data))
+    .catch(err => alert(err));
 });

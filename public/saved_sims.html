@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="profile_scripts.js"></script>
+    <script src="saved_sims_scripts.js"></script>
 </head>
 <body>
 <div class="container">
@@ -28,19 +28,10 @@
 </div>       
 
 <div class="container2">
-    <h1>Profile page</h1>
-    <a href="sim_upload.html"><button class="btn">Publish a new simulation</button></a>
-    <a href="saved_sims.html"><button id="btn2" class="btn">See saved simulations</button>
-        <script>const btn2 = document.getElementById('btn2');
-                btn2.style.background = 'turquoise';
-                btn2.onmouseover = () => btn2.style.background = '#1c60e8';
-                btn2.onmouseleave = () => btn2.style.background = 'turquoise';
-        </script>
-    </a>
-    <br>
-    <h2>Here are the projects you've already published!</h2>
-    <div id="publishedSims">
-        Oops, you haven't published anything!
+    <h1>Here are the simulations you've saved for later!</h1>
+    
+    <div id="simContainer">
+        Oops, you haven't saved anything!
     </div>
 </div>
 
@@ -134,4 +125,3 @@
 
 </body>
 </html>
-
