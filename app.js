@@ -49,17 +49,23 @@ app.post('/checkuser', (req, res)=>{
 
 app.post('/signup', (req, res)=>{
     const {email, username, password} = req.body;
-    db.get(`SELECT * FROM Users WHERE Email = '${email}';`,
-        (err, row)=>{
+    db.all(`SELECT * FROM Users WHERE Email = '${email}' OR Username = '${username}';`,
+        (err, rows)=>{
             if (err){ 
                 return res.status(404).send("Error in select statement:\n" + err.message);  
             }
             console.log("Grabbing rows...");
-            console.log("Row retrieved: " + row);
-            if (row) {
-                console.log("User by this email address already exists");
-                return res.status(400).send("User by this email address already exists.");
-            }
+            console.log("Rows retrieved: " + rows);
+            //If rows.length > 0, they will DEFINITELY be stopped in this block
+            //The maximum number of rows is 2 where one account has the email and another has the username
+            if (rows.length > 0) {
+                for(const row in rows){
+                    if (row.Email === email)
+                        return res.status(400).send("User by this email address already exists.");
+                    if (row.Username === username)
+                        return res.status(400).send("User by this email address already exists.");
+                }
+            }//If username or email is taken, they CANNOT pass through this if block
             console.log("Going to insert now for " + email + ", " + username + ", " + password);
 
             db.run(`INSERT INTO Users VALUES('${email}', '${username}', '${password}');`,
@@ -137,7 +143,7 @@ app.post('/uploadSim', uploadSim.fields([
             (err)=>{
                 if(err) return res.status(500).send(err);
 
-                res.redirect('public/Simulations/' + simId);
+                res.redirect('/Simulations/' + simId);
             });
         }
     );
@@ -254,8 +260,7 @@ app.get('/explore/:search', async (req, res) => {
         // Retrieve data from the virtual table based on search query
         const rows = await new Promise((resolve, reject) => {
             db.all(`SELECT SimId, Author, Title, Description FROM Sims_fts
-                    WHERE Sims_fts MATCH '${req.params.search}'
-                    ORDER BY rank;`, (err, rows) => {
+                    WHERE Sims_fts MATCH '${req.params.search}';`, (err, rows) => {
                 if (err) reject(err);
                 else resolve(rows);
             });
@@ -359,6 +364,39 @@ app.get('/savedSims', async (req, res) => {
     } catch(err){ 
         res.status(500).send(err);
     }
+});
+
+app.get('/Profiles/:username', (req, res) => {
+    res.sendFile(__dirname + '/public/user_profile.html');
+});
+
+app.get('/profileSims/:username', async (req, res) => {
+    const rows = await new Promise((resolve, reject)=>{
+        db.all(`SELECT * FROM Sims_fts WHERE Author = '${req.params.username}';`, (err, rows)=>{
+            if(err) reject(err);
+            else resolve(rows);
+        });
+    }).catch(err => console.error(err));
+    const simulations = [];
+    for (const row of rows) {
+        const data = {
+            id: row.SimId,
+            author: row.Author,
+            title: row.Title,
+            description: row.Description,
+            thumbnail: "../Sims/"
+        };
+
+        const image = await new Promise((resolve, reject) => {
+            db.get(`SELECT ImageURL FROM Images WHERE SimId = '${data.id}';`, (err, image) => {
+                if (err) reject(err);
+                else resolve(image);
+            });
+        });
+        data.thumbnail += image.ImageURL;
+        simulations.push(data);
+    }
+    res.status(200).json({simulations});
 });
 
 app.listen(8080, ()=>{console.log("Listening to port 8080")});

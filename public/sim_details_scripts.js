@@ -3,7 +3,7 @@ const simId = window.location.href.slice(-6);
 function GetSimDetails(simData){
     const {author, title, desc, images} = simData;
     document.getElementById('simtitle').textContent = title;
-    document.getElementById('authorTag').textContent = "By " + author;
+    document.getElementById('authorTag').innerHTML = 'By <a href="../Profiles/' + author + '">' + author + '</a>';
     document.getElementById('simdesc').textContent = desc;
     const imgRow = document.getElementsByClassName('small-img-row').item(0);
     images.forEach(img => {

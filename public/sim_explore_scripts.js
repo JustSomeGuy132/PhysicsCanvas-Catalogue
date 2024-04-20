@@ -1,7 +1,7 @@
 function Search(){
     const searchQuery = document.getElementById('search').value;
     let sQ = searchQuery;
-    sQ = sQ.replace(" ", "+");
+    sQ = sQ.replace(" ", " OR ");
     FetchSims(sQ);
 }
 

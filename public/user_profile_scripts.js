@@ -1,7 +1,7 @@
 function OrganiseSims(sims){
     const {simulations} = sims;
     const container = document.getElementById('publishedSims');
-    container.innerHTML = simulations.length > 0? '' : "Oops, you haven't published anything!";
+    container.innerHTML = simulations.length > 0? '' : "Oops, they haven't published anything!";
     let count = 0;
     let row;
     simulations.forEach(content => {
@@ -39,12 +39,14 @@ function OrganiseSims(sims){
         descEl.textContent = description;
         newEl.appendChild(descEl);
         //Change the title of the page
-        document.getElementsByTagName('h1').item(0).textContent = "Welcome back, " + author + "!";
+        document.getElementsByTagName('h1').item(0).textContent += author + "!";
     });
 }
-
+//Split the url by / characters and take the last one to be the username
+//Since the url will be Profiles/{username}
+const username = window.location.href.split('/').pop();
 document.addEventListener('DOMContentLoaded', (e)=>{
-    fetch('../publishedSims', { method: 'GET' })
+    fetch('../profileSims/' + username, { method: 'GET' })
     .then(response => response.json())
     .then(data => OrganiseSims(data))
     .catch(err => alert(err));
