@@ -37,6 +37,7 @@ function OrganiseSims(sims){
         //Description text
         const descEl = document.createElement('p');
         descEl.textContent = description;
+        if (descEl.textContent.length > 68) descEl.textContent = descEl.textContent.slice(0, 65) + "...";
         newEl.appendChild(descEl);
         //Change the title of the page
         document.getElementsByTagName('h1').item(0).textContent += author + "!";
