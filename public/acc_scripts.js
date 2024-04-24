@@ -1,7 +1,9 @@
-document.querySelector('form').addEventListener('submit', handleSubmit);
-function handleSubmit(event){
-    event.preventDefault();
-}
+document.addEventListener('DOMContentLoaded', (e)=>{
+    document.querySelector('form').addEventListener('submit', 
+    (event)=>{
+        event.preventDefault();
+    })
+});
 
 function VerifyLogin(){
     const email = document.getElementById("email-log").value;
@@ -18,7 +20,11 @@ function VerifyLogin(){
     })
     .then(response => {
         if(response.redirected) window.location.href = response.url;
+        else{
+            return response.text();
+        }
     })
+    .then(message => alert(message))
     .catch(error => alert("Error after fetch:\n" + error));
 }
 
@@ -27,8 +33,7 @@ function ValidUserN(usern){
             && !usern.includes(" "));
 }
 function ValidPassword(pass){
-    return (pass.length > 7 && pass.length <= 20
-            && !pass.includes(" "));
+    return (2);
 }
 function ValidRePass(){
     return (document.getElementById("password-sign").value === document.getElementById("re-password").value);
@@ -43,8 +48,8 @@ function ValidateSignUp(){
         alert("Email or username are invalid!");
         return;
     }
-    if (!ValidPassword(password)){
-        alert("Password length invalid, length detected = " + pass.length);
+    if (password.length < 7 || password.length > 20 || password.includes(" ")){
+        alert("Password length invalid, length detected = " + password.length);
         return;
     }
     if (password !== re_pass){

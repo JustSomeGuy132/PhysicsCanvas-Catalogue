@@ -72,15 +72,14 @@ app.post('/signup', (req, res)=>{
             (err)=>{
                 if(err){
                     console.error("Error when inserting:\n" + err);
-                    return;
                 }
                 else{
                     console.log("No error when inserting");
+                    res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
+                    res.cookie('username', JSON.stringify(username), {maxAge: 86400000, httpOnly: true});
+                    res.redirect("/index.html");
                 }
             });
-            res.cookie('user', JSON.stringify(email), {maxAge: 86400000, httpOnly: true});
-            res.cookie('username', JSON.stringify(username), {maxAge: 86400000, httpOnly: true});
-            res.redirect("/index.html");
         }
     );
 });
