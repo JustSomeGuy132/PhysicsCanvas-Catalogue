@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', (e)=>{
-    document.querySelector('form').addEventListener('submit', 
-    (event)=>{
-        event.preventDefault();
-    })
+    const forms = document.getElementsByTagName('form')
+    for(const i = 0; i < forms.length; i++)
+        forms.item(i).addEventListener('submit', 
+        (event)=>{
+            event.preventDefault();
+        });
 });
 
 function VerifyLogin(){
@@ -31,12 +33,6 @@ function VerifyLogin(){
 function ValidUserN(usern){
     return (usern.length > 0 && usern.length <= 20
             && !usern.includes(" "));
-}
-function ValidPassword(pass){
-    return (2);
-}
-function ValidRePass(){
-    return (document.getElementById("password-sign").value === document.getElementById("re-password").value);
 }
 
 function ValidateSignUp(){
